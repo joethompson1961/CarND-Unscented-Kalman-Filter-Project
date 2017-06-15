@@ -17,11 +17,13 @@ UKF::UKF() {
   // if this is false, radar measurements will be ignored (except during init)
   use_radar_ = true;
 
+  n_x_ = 5;
+
   // initial state vector
-  x_ = VectorXd(5);
+  x_ = VectorXd(n_x_);
 
   // initial covariance matrix
-  P_ = MatrixXd(5, 5);
+  P_ = MatrixXd(n_x_, n_x_);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_ = 30;
@@ -51,10 +53,37 @@ UKF::UKF() {
 
   Hint: one or more values initialized above might be wildly off...
   */
+
+  // Sigma point matrix
+  Xsig_pred_ = MatrixXd(n_x_, 2 * n_x_ + 1);
+
 }
 
 UKF::~UKF() {}
 
+void UKF::GenerateSigmaPoints(VectorXd &x, MatrixXd &P, MatrixXd &Xsig) {
+
+  //define spreading parameter
+  double lambda = 3 - n_x_;
+
+  //calculate square root of P
+  MatrixXd A = P.llt().matrixL();
+
+  //calculate sigma points ...
+  //set sigma points as columns of matrix Xsig
+  double c = sqrt(lambda+n_x_);
+
+  //set first column of sigma point matrix equal to current state (the mean state)
+  Xsig.col(0) = x_;
+
+  //set remaining sigma points
+  for (int i = 0; i < n_x; i++)
+  {
+    Xsig.col(i+1)      = x_ + c * A.col(i);
+    Xsig.col(i+1+n_x_) = x_ - c * A.col(i);
+  }
+
+}
 /**
  * @param {MeasurementPackage} meas_package The latest measurement data of
  * either radar or laser.
@@ -80,6 +109,26 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
+
+  //set example state
+  x_ <<   5.7441,
+		 1.3800,
+		 2.2049,
+		 0.5015,
+		 0.3528;
+
+  //set example covariance matrix
+  P_ <<     0.0043,   -0.0013,    0.0030,   -0.0022,   -0.0020,
+		  -0.0013,    0.0077,    0.0011,    0.0071,    0.0060,
+		   0.0030,    0.0011,    0.0054,    0.0007,    0.0008,
+		  -0.0022,    0.0071,    0.0007,    0.0098,    0.0100,
+		  -0.0020,    0.0060,    0.0008,    0.0100,    0.0123;
+
+  GenerateSigmaPoints(x_, P_, Xsig_pred_);
+
+  // print result
+  std::cout << "Xsig = " << std::endl << Xsig_pred_ << std::endl;
+
 }
 
 /**
