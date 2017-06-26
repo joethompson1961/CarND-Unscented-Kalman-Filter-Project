@@ -10,26 +10,47 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+#define ZERO (0.001F)
+
 class UKF {
 public:
 
-  ///* initially set to false, set to true in first call of ProcessMeasurement
+  // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
 
-  ///* if this is false, laser measurements will be ignored (except for init)
+  // previous timestamp
+  long long previous_timestamp_;
+
+  // if this is false, laser measurements will be ignored (except for init)
   bool use_laser_;
 
-  ///* if this is false, radar measurements will be ignored (except for init)
+  // if this is false, radar measurements will be ignored (except for init)
   bool use_radar_;
 
-  ///* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
+  // state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
   VectorXd x_;
 
-  ///* state covariance matrix
+  // state covariance matrix
   MatrixXd P_;
 
-  ///* predicted sigma points matrix
+  // augmented sigma points matrix
+  MatrixXd Xsig_aug_;
+
+  // predicted sigma points matrix
   MatrixXd Xsig_pred_;
+
+  //create matrix for radar sigma points in measurement space
+  MatrixXd Zsig_pred_;
+
+  //create vector for mean predicted radar measurement
+  VectorXd z_pred_;
+
+  //create matrix for predicted radar measurement covariance
+  MatrixXd S_;
+  MatrixXd R_;
+
+  //create vector for incoming radar measurement
+  VectorXd z_;
 
   ///* time when the state is true, in us
   long long time_us_;
@@ -64,9 +85,11 @@ public:
   ///* Augmented state dimension
   int n_aug_;
 
+  // radar measurement dimension
+  int n_z_;
+
   ///* Sigma point spreading parameter
   double lambda_;
-
 
   /**
    * Constructor
@@ -80,7 +103,15 @@ public:
 
   void GenerateSigmaPoints(VectorXd &x, MatrixXd &P, MatrixXd &Xsig_out);
 
-  /**
+  void GenerateAugmentedSigmaPoints(VectorXd &x, MatrixXd &P, MatrixXd &Xsig_out);
+
+  void SigmaPointPrediction(double dt, MatrixXd &Xsig_aug, MatrixXd &Xsig_out);
+
+  void PredictMeanAndCovariance(MatrixXd &Xsig_pred, VectorXd &x_out, MatrixXd &P_out);
+
+  void PredictRadarMeasurement(MatrixXd Xsig_pred, MatrixXd &Zsig_pred_, VectorXd &z_out, MatrixXd &S_out);
+
+ /**
    * ProcessMeasurement
    * @param meas_package The latest measurement data of either radar or laser
    */
