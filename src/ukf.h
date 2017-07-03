@@ -52,32 +52,27 @@ public:
   //lidar measurement dimension
   int n_y_;
 
-  //create matrix for lidar sigma points in measurement space
-  MatrixXd Ysig_pred_;
-
-  //create vector for mean predicted lidar measurement
-  VectorXd y_pred_;
-
   //create vector for incoming lidar measurement
   VectorXd y_;
 
   //create matrix for predicted lidar measurement covariance
   MatrixXd L_;
 
-  ///* Laser measurement noise standard deviation position1 in m
+  // Laser measurement noise standard deviation position1 in m
   double std_laspx_;
 
-  ///* Laser measurement noise standard deviation position2 in m
+  // Laser measurement noise standard deviation position2 in m
   double std_laspy_;
 
-  ///* Process noise standard deviation longitudinal acceleration in m/s^2
+  // Process noise standard deviation longitudinal acceleration in m/s^2
   double std_a_;
 
-  ///* Process noise standard deviation yaw acceleration in rad/s^2
+  // Process noise standard deviation yaw acceleration in rad/s^2
   double std_yawdd_;
 
-  //create matrix for predicted lidar measurement covariance
-  MatrixXd S_l_;
+  // Lidar NIS (normalized innovation squared)
+  double NIS_lidar_;
+
 
   ///* Radar measurement variables
   // radar measurement dimension
@@ -95,17 +90,17 @@ public:
   //create matrix for predicted radar measurement covariance
   MatrixXd R_;
 
-  ///* Radar measurement noise standard deviation radius in m
+  // Radar measurement noise standard deviation radius in m
   double std_radr_;
 
-  ///* Radar measurement noise standard deviation angle in rad
+  // Radar measurement noise standard deviation angle in rad
   double std_radphi_;
 
-  ///* Radar measurement noise standard deviation radius change in m/s
+  // Radar measurement noise standard deviation radius change in m/s
   double std_radrd_ ;
 
-  //create matrix for predicted radar measurement covariance
-  MatrixXd S_r_;
+  // Radar NIS (normalized innovation squared)
+  double NIS_radar_;
 
   ///* Weights of sigma points
   VectorXd weights_;
@@ -131,7 +126,7 @@ public:
 
   void PredictMeanAndCovariance(MatrixXd &Xsig_pred, VectorXd &x_out, MatrixXd &P_out);
 
-  void PredictRadarMeasurement(MatrixXd Xsig_pred, MatrixXd &Zsig_pred_, VectorXd &z_out, MatrixXd &S_out);
+  void PredictRadarMeasurement(MatrixXd Xsig_pred, MatrixXd &Zsig_pred_, VectorXd &z_out);
 
  /**
    * ProcessMeasurement
