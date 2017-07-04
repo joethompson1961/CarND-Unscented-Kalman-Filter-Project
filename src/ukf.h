@@ -17,6 +17,13 @@ public:
 
   //initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
+  //for initialization of state vector at startup:
+  int init_cnt_;
+  int init_sensor_;
+  float px_;        // previous x
+  float py_;        // previous y
+
+  int time_step_;
 
   //previous timestamp
   long long previous_timestamp_;
@@ -58,11 +65,11 @@ public:
   //create matrix for predicted lidar measurement covariance
   MatrixXd L_;
 
-  // Laser measurement noise standard deviation position1 in m
-  double std_laspx_;
-
-  // Laser measurement noise standard deviation position2 in m
-  double std_laspy_;
+//  // Laser measurement noise standard deviation position1 in m
+//  double std_laspx_;
+//
+//  // Laser measurement noise standard deviation position2 in m
+//  double std_laspy_;
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   double std_a_;
