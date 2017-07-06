@@ -46,3 +46,9 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 	//return the result
 	return rmse;
 }
+
+// Normalize angles to range -PI:PI. All agles in radians.
+double Tools::NormalizeAngle(double  phi)
+{
+  return  atan2(sin(phi), cos(phi));
+}
