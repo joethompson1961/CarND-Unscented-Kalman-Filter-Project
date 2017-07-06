@@ -223,9 +223,7 @@ void UKF::PredictMeanAndCovariance(MatrixXd &Xsig_pred, VectorXd &x_out, MatrixX
 
     // state difference
     VectorXd x_diff = Xsig_pred.col(i) - x;
-    //angle normalization
-    while (x_diff(3) >  M_PI) x_diff(3) -= 2.0 * M_PI;
-    while (x_diff(3) < -M_PI) x_diff(3) += 2.0 * M_PI;
+    x_diff(3) = tools_.NormalizeAngle(x_diff(3));	// angle normalization
 
     P = P + weights_(i) * x_diff * x_diff.transpose();
   }
@@ -300,12 +298,6 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
       x_[1] = measurement_pack.raw_measurements_[1];
     }
 
-//    x_[2] = 5.0;
-////    x_[3] = 3.14;
-//    previous_timestamp_ = measurement_pack.timestamp_;
-//    is_initialized_ = true;
-//    return;
-
     /**
      * Initialize the state x_ with the first measurement.
      * [pos_x pos_y vel_abs yaw_angle yaw_rate]
@@ -321,13 +313,13 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
       dy = x_[1] - py_;
       d = sqrt(dx*dx + dy*dy);
 
-      //this initializaion ISN'T a good general solution; it's specific for the project test datasets.
-      //initial velocity is an average from first N samples
+      // this initialization ISN'T a good general solution; it's specific for the project test datasets.
+      // initial velocity is an average from first N samples
       x_[2] = d / delta_t;
       // initial velocity is around 5mps (by observation).
       x_[2] = 4.95;
 
-      // initialize yaw angle: if dx is negative then 180 degrees (starts facing left instead of right.
+      // initialize yaw angle - if dx is negative then 180 degrees (starts facing left instead of right.
       if (dx < 0.0)
     	  x_[3] = 3.14;
 
@@ -336,6 +328,7 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
       cout << "dx:" << dx << endl;
       cout << endl << "initial x_:" << endl << x_ << endl;
     }
+
     return;
   }
 
@@ -418,8 +411,7 @@ void UKF::UpdateRadar(const VectorXd &z) {
 
   // radar measurement innovation
   VectorXd y = z - r_pred;
-  while (y(1) >  M_PI) y(1) -= 2.0 * M_PI;  //angle normalization
-  while (y(1) < -M_PI) y(1) += 2.0 * M_PI;  //angle normalization
+  y(1) = tools_.NormalizeAngle(y(1));	// angle normalization
 
   // calculate radar cross correlation matrix and radar measurement innovation covariance
   MatrixXd S = MatrixXd(n_r_, n_r_);   // radar innovation (residual) covariance
@@ -429,13 +421,15 @@ void UKF::UpdateRadar(const VectorXd &z) {
   for (int i = 0; i < n_sig_; i++) {
     // predicted radar measurement innovation (residual)
 	VectorXd r_diff = Rsig_pred.col(i) - r_pred;
-    while (r_diff(1) >  M_PI) r_diff(1) -= 2.0 * M_PI;  //angle normalization
-    while (r_diff(1) < -M_PI) r_diff(1) += 2.0 * M_PI;  //angle normalization
+//    while (r_diff(1) >  M_PI) r_diff(1) -= 2.0 * M_PI;  //angle normalization
+//    while (r_diff(1) < -M_PI) r_diff(1) += 2.0 * M_PI;  //angle normalization
+    r_diff(1) = tools_.NormalizeAngle(r_diff(1));	// angle normalization
 
     // predicted state innovation
     VectorXd x_diff = Xsig_pred_.col(i) - x_;
-    while (x_diff(3) >  M_PI) x_diff(3) -= 2.0 * M_PI;  //angle normalization
-    while (x_diff(3) < -M_PI) x_diff(3) += 2.0 * M_PI;  //angle normalization
+//    while (x_diff(3) >  M_PI) x_diff(3) -= 2.0 * M_PI;  //angle normalization
+//    while (x_diff(3) < -M_PI) x_diff(3) += 2.0 * M_PI;  //angle normalization
+    x_diff(3) = tools_.NormalizeAngle(x_diff(3));	// angle normalization
 
     S = S + weights_(i) * r_diff * r_diff.transpose();
     Tc = Tc + weights_(i) * x_diff * r_diff.transpose();
