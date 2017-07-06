@@ -38,6 +38,9 @@ int main()
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
 
+  string out_file_name_ = "C:\nis_log.txt";
+  ofstream out_file_(out_file_name_.c_str(), ofstream::out);
+
   h.onMessage([&ukf,&tools,&estimations,&ground_truth](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -108,8 +111,14 @@ int main()
     	  //Call ProcessMeasurment(meas_package) for Kalman filter
     	  ukf.ProcessMeasurement(meas_package);    	  
 
-    	  //Push the current estimated x,y positon from the Kalman filter's state vector
+          // output the NIS values
+          if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {
+            out_file_ << ukf.NIS_laser_ << "\n";
+          } else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
+            out_file_ << ukf.NIS_radar_ << "\n";
+          }
 
+    	  //Push the current estimated x,y positon from the Kalman filter's state vector
     	  VectorXd estimate(4);
 
     	  double p_x = ukf.x_(0);
