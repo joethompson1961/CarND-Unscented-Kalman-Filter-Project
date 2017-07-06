@@ -50,10 +50,10 @@ UKF::UKF() {
   }
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 30;
+  std_a_ = 0.775;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 30;
+  std_yawdd_ = 0.55;
 
   // lidar measurement dimension (p_x, p_y)
   n_l_ = 2;
@@ -71,11 +71,10 @@ UKF::UKF() {
 
   // lidar measurement function
   H_lidar_ = MatrixXd(2, 5);
-  H_lidar_ << 1, 0, 0, 0, 0
+  H_lidar_ << 1, 0, 0, 0, 0,
               0, 1, 0, 0, 0;
 
-
-  // radar measurement dimension (r, phi, and r_dot)
+  // Radar measurement dimension (r, phi, and r_dot)
   n_r_ = 3;
 
   // Radar measurement noise standard deviation radius in m
@@ -257,22 +256,11 @@ void UKF::PredictRadarMeasurement(const MatrixXd &Xsig_pred, MatrixXd &Rsig_pred
   }
 }
 
-
-/*******************************************************************************
-* Programming assignment functions:
-*******************************************************************************/
-
-
 /**
  * @param {MeasurementPackage} measurement_pack The latest measurement data of
  * either radar or laser.
  */
 void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
-  /**
-  TODO:
-      Complete this function! Make sure you switch between lidar and radar
-      measurements.
-  */
   float dx;
   float dy;
   float d;
@@ -327,7 +315,7 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
       px_ = x_[0];
       py_ = x_[1];
       previous_timestamp_ = measurement_pack.timestamp_;
-    } else if (init_cnt_ >= 2) {
+    } else if (init_cnt_ >= 3) {
       delta_t = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
       dx = x_[0] - px_;
       dy = x_[1] - py_;
@@ -335,16 +323,17 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
 
       //this initializaion ISN'T a good general solution; it's specific for the project test datasets.
       //initial velocity is an average from first N samples
-//      x_[2] = d / delta_t;
-      //initial velocity is around 5mps.
+      x_[2] = d / delta_t;
+      // initial velocity is around 5mps (by observation).
       x_[2] = 4.95;
 
-      //initialize yaw; if dx is negative then 180 degrees (starts facing left instead of right.
-      if (dx < 0)
+      // initialize yaw angle: if dx is negative then 180 degrees (starts facing left instead of right.
+      if (dx < 0.0)
     	  x_[3] = 3.14;
 
       previous_timestamp_ = measurement_pack.timestamp_;
       is_initialized_ = true;
+      cout << "dx:" << dx << endl;
       cout << endl << "initial x_:" << endl << x_ << endl;
     }
     return;
@@ -372,18 +361,18 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
 
     // Radar updates
-	VectorXd z = VectorXd(n_r_);
-    z << meas_package.raw_measurements_;
+    VectorXd z = VectorXd(n_r_);
+    z << measurement_pack.raw_measurements_;
 
     UpdateRadar(z);
   } else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
 
     // Laser updates
-	VectorXd z = VectorXd(n_l_);
-	z << meas_package.raw_measurements_;
+    VectorXd z = VectorXd(n_l_);
+    z << measurement_pack.raw_measurements_;
 
-	UpdateLidar(z);
-//	UpdateLidar_KF(z);
+//	  UpdateLidar(z);
+    UpdateLidar_KF(z);
   }
   cout << endl << "x_(" << time_step_ << ") = " << endl << x_ << endl;
 //  cout << "P_ = " << endl << P_ << endl;

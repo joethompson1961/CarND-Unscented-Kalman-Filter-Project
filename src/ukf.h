@@ -74,7 +74,7 @@ public:
 
   // lidar measurement matrix
   // projects the state space, e.g. 5D {x, y, v, yaw, yaw_dot}, into the lidar measurement space, e.g. 2D (x, y)
-  MatrixXd H_;
+  MatrixXd H_lidar_;
 
   // lidar measurement noise standard deviation position1 in m
   double std_laspx_;
