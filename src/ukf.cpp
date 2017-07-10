@@ -1,6 +1,7 @@
 #include "ukf.h"
 #include "Eigen/Dense"
 #include <iostream>
+#include "tools.h"
 
 using namespace std;
 using Eigen::MatrixXd;
@@ -377,10 +378,8 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
  */
 void UKF::Prediction(double delta_t) {
   /**
-  TODO:
-
-  Complete this function! Estimate the object's location. Modify the state
-  vector, x_. Predict sigma points, the state, and the state covariance matrix.
+	Estimate the object's location. Modify the state vector, x_.
+	Predict sigma points, the state, and the state covariance matrix.
   */
   GenerateAugmentedSigmaPoints(x_, P_, Xsig_aug_);
   SigmaPointPrediction(delta_t, Xsig_aug_, Xsig_pred_);
@@ -396,13 +395,9 @@ void UKF::Prediction(double delta_t) {
  */
 void UKF::UpdateRadar(const VectorXd &z) {
   /**
-   *
-    TODO:
-
-    Complete this function! Use radar data to update the belief about the object's
+	Use radar data to update the belief about the object's
     position. Modify the state vector, x_, and covariance, P_.
-
-    You'll also need to calculate the radar NIS.
+	Calculate the radar NIS.
   */
   // predicted radar measurement; calculated from predicted sigma points
   MatrixXd Rsig_pred = MatrixXd(n_r_, n_sig_);  //radar sigma points in radar measurement space
@@ -411,7 +406,7 @@ void UKF::UpdateRadar(const VectorXd &z) {
 
   // radar measurement innovation
   VectorXd y = z - r_pred;
-  y(1) = tools_.NormalizeAngle(y(1));	// angle normalization
+  y(1) = tools_.NormalizeAngle((double)y(1));	// angle normalization
 
   // calculate radar cross correlation matrix and radar measurement innovation covariance
   MatrixXd S = MatrixXd(n_r_, n_r_);   // radar innovation (residual) covariance
@@ -423,13 +418,13 @@ void UKF::UpdateRadar(const VectorXd &z) {
 	VectorXd r_diff = Rsig_pred.col(i) - r_pred;
 //    while (r_diff(1) >  M_PI) r_diff(1) -= 2.0 * M_PI;  //angle normalization
 //    while (r_diff(1) < -M_PI) r_diff(1) += 2.0 * M_PI;  //angle normalization
-    r_diff(1) = tools_.NormalizeAngle(r_diff(1));	// angle normalization
+    r_diff(1) = tools_.NormalizeAngle((double)r_diff(1));	// angle normalization
 
     // predicted state innovation
     VectorXd x_diff = Xsig_pred_.col(i) - x_;
 //    while (x_diff(3) >  M_PI) x_diff(3) -= 2.0 * M_PI;  //angle normalization
 //    while (x_diff(3) < -M_PI) x_diff(3) += 2.0 * M_PI;  //angle normalization
-    x_diff(3) = tools_.NormalizeAngle(x_diff(3));	// angle normalization
+    x_diff(3) = tools_.NormalizeAngle((double)x_diff(3));	// angle normalization
 
     S = S + weights_(i) * r_diff * r_diff.transpose();
     Tc = Tc + weights_(i) * x_diff * r_diff.transpose();
@@ -453,18 +448,15 @@ void UKF::UpdateRadar(const VectorXd &z) {
  */
 void UKF::UpdateLidar(const VectorXd &z) {
   /**
-  TODO:
+	Use lidar data to update the belief about the object's
+	position. Modify the state vector, x_, and covariance, P_.
+	Calculate the lidar NIS.
 
-  Complete this function! Use lidar data to update the belief about the object's
-  position. Modify the state vector, x_, and covariance, P_.
-
-  You'll also need to calculate the lidar NIS.
-
-  The lidar measurement only includes px and py.
-  This doesn't require a non-linear conversion from the predicted state to measurement space.
-  Instead simply use px and py from the sigma points.
-  Note that UKF is overkill for lidar due to lidar predictions are linear function; this should
-  be implemented with more compuationally efficient standard kalman filter.
+	The lidar measurement only includes px and py which
+	don't require a non-linear conversion from the predicted state to measurement space.
+	Instead simply use px and py from the sigma points.
+	UKF is overkill for lidar due to lidar predictions are linear function; this should
+	be implemented with more computationally efficient standard kalman filter.
   */
   // create matrix for lidar sigma points in lidar measurement space
   MatrixXd Lsig_pred = MatrixXd(n_l_, n_sig_);
@@ -511,7 +503,7 @@ void UKF::UpdateLidar(const VectorXd &z) {
 
 void UKF::UpdateLidar_KF(const VectorXd &z) {
   /**
-    * Measurement update function
+    * Kalman filter measurement update function
   */
   MatrixXd P_Ht = P_ * H_lidar_.transpose();  // do this calculation once in advance to eliminate executing twice below.
 

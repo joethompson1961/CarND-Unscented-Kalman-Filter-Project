@@ -12,9 +12,8 @@ Tools::~Tools() {}
 VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
                               const vector<VectorXd> &ground_truth) {
   /**
-  DONE:
     * Calculate the RMSE here.
-  */
+    */
 	VectorXd rmse(4);
 	rmse << 0,0,0,0;
 
@@ -45,10 +44,4 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 
 	//return the result
 	return rmse;
-}
-
-// Normalize angles to range -PI:PI. All agles in radians.
-double inline Tools::NormalizeAngle(double  phi)
-{
-  return  atan2(sin(phi), cos(phi));
 }
