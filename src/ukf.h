@@ -11,7 +11,8 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-#define ZERO (0.001F)
+#define ZERO_T (0.001F)
+#define ZERO (0.0001F)
 
 class UKF {
 public:
